@@ -36,14 +36,16 @@ There are 134 distinct aisles in the dataset and the most frequently ordered is 
 instacart%>%
   count(aisle)%>%
   mutate(aisle = fct_reorder(aisle, desc(n)))%>%
+  filter(n>10000)%>%
   ggplot(aes(x = aisle, y = n))+
    scale_y_discrete(breaks = c(200000,20000, 2000, 200),labels=c("200000","20000", "2000", "200"), limits = c(10000,200000)) +
-  geom_point()+
+  geom_point(aes(color = aisle))+
   labs(
       title = "Number of items ordered in each aisle",
       x = "Aisle",
       y = "Number of items"
-    )
+    ) +
+theme(axis.text.x = element_text(angle = 70, hjust = 1))
 ```
 ## 1.3 Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 
@@ -52,8 +54,9 @@ instacart %>%
   filter(aisle %in% c('baking ingredients', 'dog food care', 'packaged vegetables fruits')) %>% 
   group_by(aisle, product_name)  %>% 
   count() %>% 
-  group_by(aisle) %>% 
-  filter(n==max(n))%>%
+  group_by(aisle) %>%
+  mutate(order_rank=min_rank(desc(n)))%>%
+  filter(order_rank < 4)%>%
   select(aisle, product_name)%>%
    knitr::kable(
     col.names = c("Aisle", "Most popular item"), 
@@ -74,12 +77,37 @@ instacart %>%
     names_from = "order_dow",
     values_from = "mean"
   ) %>% 
-knitr::kable( 
+knitr::kable( digits = 1，
   col.names = c("Product Name", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"),
   caption = "Table of mean order hours for pink lady apples and coffee ice creams in each day ",
   format = 'html'
 )
   
+  
+```
+# prolem 2
+load the dataset
+
+```{r}
+library(p8105.datasets)
+data("brfss_smart2010")
+
+```
+## 2.1
+First, do some data cleaning:
+format the data to use appropriate variable names;
+focus on the “Overall Health” topic
+include only responses from “Excellent” to “Poor”
+organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+```{r}
+health_data=
+  brfss_smart2010 %>%
+  janitor::clean_names()%>%
+  select(-respid,-geo_location)%>%
+  filter(topic %in% c("overall health"))%>%
+  filter(response %in% c("excellent", "good","poor"))%>%
+   mutate(response = fct_relevel(response, c("Excellent", "Very good", "Good", "Fair", "Poor")))
+
   
 ```
 
