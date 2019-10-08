@@ -89,6 +89,7 @@ knitr::kable( digits = 1，
 load the dataset
 
 ```{r}
+
 library(p8105.datasets)
 data("brfss_smart2010")
 
@@ -101,13 +102,26 @@ include only responses from “Excellent” to “Poor”
 organize responses as a factor taking levels ordered from “Poor” to “Excellent”
 ```{r}
 health_data=
-  brfss_smart2010 %>%
+  brfss_smart2010%>%
   janitor::clean_names()%>%
-  select(-respid,-geo_location)%>%
-  filter(topic %in% c("overall health"))%>%
-  filter(response %in% c("excellent", "good","poor"))%>%
-   mutate(response = fct_relevel(response, c("Excellent", "Very good", "Good", "Fair", "Poor")))
+  filter(topic %in% "Overall Health" )%>%
+   mutate(response = forcats::fct_relevel(response, c("Excellent", "Very good", "Good", "Fair", "Poor")))
 
+view(health_data)
   
+
+```
+
+In 2002, which states were observed at 7 or more locations? What about in 2010?
+```{r}
+health_data%>%
+  filter(year %in% "2002")%>%
+  group_by(locationabbr)%>%
+  count()%>%
+  filter(n>7)%>%
+  knitr::kable(
+  )
+
+
 ```
 
