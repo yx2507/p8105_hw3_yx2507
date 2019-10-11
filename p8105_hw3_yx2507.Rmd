@@ -122,6 +122,32 @@ health_data%>%
   knitr::kable(
   )
 
+health_data%>%
+  filter(year %in% "2010")%>%
+  group_by(locationabbr) %>%
+  count()%>%
+  filter(n>7)%>%
+  knitr::kable()
+
+```
+Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+```{r}
+
+
+ health_subdata = 
+  health_data%>%
+  filter(response %in% "Excellent")%>%
+  group_by(year, locationabbr)%>%
+  summarize(mean_datavalue=mean(data_value, na.rm = TRUE))%>%
+  select(year, locationabbr, mean_datavalue)
+  
+  ## make a plot
+plot_average = 
+  health_subdata%>%
+ggplot(aes(x=year, y=mean_datavalue, color = locationabbr))+
+  geom_line(alpha = .5)
+
+
 
 ```
 
