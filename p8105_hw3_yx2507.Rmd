@@ -163,3 +163,40 @@ health_data%>%
   
 ```
 
+# Problem 3
+```{r}                                                                                                                                  
+data_activity= read_csv("./data/accel_data.csv")%>%
+  janitor::clean_names()%>%
+  mutate(day= factor(day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
+         weekday = day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")
+                              )%>%
+  pivot_longer(
+    activity_1:activity_1440,
+     names_to = "activity_number",
+    values_to = "activity_value"
+  )%>%
+  select(week, day_id, weekday, day,activity_number,activity_value, everything())
+  
+```
+there are `r nrow(data_activity)` rows and `r ncol(data_activity)` columns. Key varaibles are the number of week, day and whether it is weekday or weekends, also activity_n is the value of each test.
+
+## 3.2Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+```{r}
+data_activity%>%
+  group_by(day_id)%>%
+  mutate(sum_activity = sum(activity_value))%>%
+  distinct(sum_activity)%>%
+  select(day_id,sum_activity,everything())%>%
+  knitr::kable()
+
+```
+## 3.3 make single panle to show 24-hr trend for each day
+```{r}
+plot_value=
+data_activity%>%
+  ggplot(aes(x=activity_number, y=activity_value, color= week))+
+           geom_point()+
+  facet_grid(.~ day_id)
+
+```
+
