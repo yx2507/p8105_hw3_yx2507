@@ -127,7 +127,8 @@ health_data=
   brfss_smart2010%>%
   janitor::clean_names()%>%
   filter(topic %in% "Overall Health" )%>%
-   mutate(response = forcats::fct_relevel(response, c("Excellent", "Very good", "Good", "Fair", "Poor")))
+   mutate(response = forcats::fct_relevel(response, c("Poor", "Fair", "Good","Very good","Excellent")))
+  
 
 view(health_data)
   
@@ -213,14 +214,23 @@ The spagetti plots shows the chage of average data value from 2002 to 2010 for e
 plot_data=
 health_data%>%
   filter(response %in% c("Poor","Fair","Good", "Very good","Excellent" ), year %in% c("2006","2010"), locationabbr == "NY")%>%
-  select(year, response, locationabbr, data_value)%>%
-    ggplot(aes(x=response, y=data_value, Color=response))+
-  geom_boxplot()+
-  facet_grid(. ~ year)
+  select(year, response, locationdesc, data_value)%>%
+    ggplot(aes(x=locationdesc, y=data_value, fill = response))+
+  geom_bar(stat = "identity", position = "fill") +
+  facet_grid(. ~ year)+
+  coord_flip()+
+  viridis::scale_fill_viridis(discrete = TRUE) +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  labs(
+    title = "Proportion of each level of health in 2006 and 2010",
+    x= "Response",
+    y= "Data_value"
+    
+  )
     
   plot_data
 ```
-As is shown in the two-panel boxplot above, in 2006 and 2010, in general, excellent, very good, good level of health have larger data_value. This trend is stable across these two years.This plot also helps us identify the distribution within each level. For example, in excellent level in 2006, more people have lower data_value, the distribution is right skewed.
+As is shown in the two-panel bar plot above, different response level in each location in NY are shown in different color in the bar chart.In 2006 and 2010, in general, excellent, very good, good level of health have larger data_value. This trend is stable across these two years.The proportion of very good and good response increase from 2006 to 2010 and now take large percent among all the response levels.
 
 # Problem 2
 
@@ -271,11 +281,18 @@ The overall data_Value for everyday is listed in the table above, with its week 
 ```{r}
 plot_value=
 data_activity%>%
-  ggplot(aes(x=activity_number, y=activity_value, color= week))+
-           geom_point()+
-  facet_grid(.~ day_id)
+  ggplot(aes(x=activity_number, y=activity_value, group = day_id, color= day))+
+           geom_line()+
+  scale_x_discrete(
+    breaks = c(120, 240, 360,480,600,720,960,1200,1440)
+  )+ 
+  labs(
+    title = "The everyday activity courses for each day",
+    x = "Activity number",
+    y = "Activity value"
+  )
 
 plot_value
 
 ```
-
+As is shown in the plot above, the 24-hour activity time courses for each day and use color to indicate day of the week. Generally speaking there are some peaks of the activity value for a day and Wednesday tend to have lower activitiy value compared to Sunday.
