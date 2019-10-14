@@ -1,5 +1,7 @@
 ---
 title: "p8015_hw3_yx2507"
+author: "Yuqing Xue"
+date: "10/13/2019"
 output: github_document
 ---
 
@@ -12,15 +14,25 @@ library(ggridges)
 library(lubridate)
 ```
 # Problem 1
-load the dataset
+## 1.1Load the dataset 
 ```{r}
 library(p8105.datasets)
 data("instacart")
+
 ```
-decription of the dataset
-## 1 How many aisles are there, and which aisles are the most items ordered from?
+## 1.2 Description of the dataset
+### How many aisles are there, and which aisles are the most items ordered from?
 There are `r nrow(instacart)` rows and `r ncol(instacart)` columns. 
-there are `r count(instacart, vars= "aisle")` 
+
+In this dataset, key variables involved in the following questions include `aisle` and `aisle_id`, which denote the names and identifiers of distinct aisles, `product_name` and `product_id`, which denote names and identifiers of distinct products (items), and `order_dow` and `order_hour_of_day`, which denote the day of the week, and the hour of the day that the order was placed, respectively. Other variables not involved in this problem may also be of interest for other purposes.
+
+### illustrate observation
+Each observation (row) in this dataset denotes a product bought in an order.
+For example, the first 5 rows in this dataset contain 15 variables. They are different products bought in order #1 by the same customer. The first product was Bulgarian Yogurt from the yogurt aisle, dairy eggs department. It was bought on 10 a.m. Wednesday. 
+
+```{r}
+options(tibble.width = Inf) 
+instacart[1:5, ]
 ```{r}
 instacart%>%
   distinct(aisle)%>%
@@ -30,24 +42,29 @@ instacart%>%
   count(aisle)%>%
   arrange(desc(n))
 ```
-There are 134 distinct aisles in the dataset and the most frequently ordered is fresh vegetables which is ordered by 150609 times.
+
+There are `r instacart %>% distinct(aisle) %>% nrow()` distinct aisles in the dataset and the most frequently ordered is fresh vegetables which is ordered by 150609 times, followed by fresh fruits asile and packaged vegetables fruits aisle.
+
+
 ## 1.2 Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
-```{r, plot1, fig.width=20, fig.height=8}
+
+```{r, plot1, fig.width=20, fig.height=10}
 instacart%>%
   count(aisle)%>%
   mutate(aisle = fct_reorder(aisle, desc(n)))%>%
   filter(n>10000)%>%
-  ggplot(aes(x = aisle, y = n))+
+  ggplot(aes(x =  aisle, y =  n))+
    scale_y_discrete(breaks = c(200000,20000, 2000, 200),labels=c("200000","20000", "2000", "200"), limits = c(10000,200000)) +
   geom_point(aes(color = aisle))+
   labs(
       title = "Number of items ordered in each aisle",
-      x = "Aisle",
-      y = "Number of items"
+      x = "number of items",
+      y = "aisle"
     ) +
 theme(axis.text.x = element_text(angle = 70, hjust = 1))
 ```
 ## 1.3 Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+the top 3 popular items of baking ingredients aisle is cane sugar for 336 times, light brown sugar for 499 times, pure baking soda for 387 times; Top 3 items in dog food care aisle are organix chicken & brown rice recipe with 28 times sold, smalle dog biscuits for 26 times, snack sticks chicken & rice recipe dog treats for 30 times; top 3 items in packaged vegetable fruits are organic baby spinach for 9784, organic blueberries for 4966 and organic raspberries for 5546 times.
 
 ```{r}
 instacart %>% 
@@ -57,9 +74,9 @@ instacart %>%
   group_by(aisle) %>%
   mutate(order_rank=min_rank(desc(n)))%>%
   filter(order_rank < 4)%>%
-  select(aisle, product_name)%>%
+  select(aisle, product_name, n)%>%
    knitr::kable(
-    col.names = c("Aisle", "Most popular item"), 
+    col.names = c("Aisle", "Most popular item","number of orders"), 
     format = 'html', 
     caption = "Table: The most popular item in three aisles"
   )
@@ -85,6 +102,10 @@ knitr::kable( digits = 1，
   
   
 ```
+
+Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered follow different patterns. Coffee Ice Cream is on average ordered during weekdays. While Pink Lady Apples are ordered on average more on Sundays and Wednesday.
+
+### Question 2.3
 # prolem 2
 load the dataset
 
@@ -112,25 +133,51 @@ view(health_data)
 
 ```
 
-In 2002, which states were observed at 7 or more locations? What about in 2010?
+## 2.2 In 2002, which states were observed at 7 or more locations? What about in 2010?
 ```{r}
-health_data%>%
+states_obs_2002=
+  health_data%>%
   filter(year %in% "2002")%>%
   group_by(locationabbr)%>%
   count()%>%
   filter(n>7)%>%
   knitr::kable(
+    col.names = c("States","Number of observed"),
+    caption = "Table for states which were observed at 7 or more locations in 2002"
   )
 
-health_data%>%
+## view table
+states_obs_2002
+```
+
+
+```{r}
+states_obs7_2010=
+  health_data%>%
   filter(year %in% "2010")%>%
   group_by(locationabbr) %>%
   count()%>%
   filter(n>7)%>%
-  knitr::kable()
+  knitr::kable(
+     col.names = c("States","number of observed"),
+    caption = "Table for states which were observed at 7 or more locations in 2010"
+  )
+
+states_obs7_2010
 
 ```
-Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+
+
+
+In 2002 and 2010, states like AL and others states which were observed at 7 or more locations are all showed in the table
+Differently, in 2002, NJ was the stated observed the most time which is 40 while in 2010, FL was oberseved 205 locations.
+
+
+## 2.3 
+
+Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. 
+
+Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
 ```{r}
 
 
@@ -145,25 +192,40 @@ Construct a dataset that is limited to Excellent responses, and contains, year, 
 plot_average = 
   health_subdata%>%
 ggplot(aes(x=year, y=mean_datavalue, color = locationabbr))+
-  geom_line(alpha = .5)
+  geom_line(alpha = .5)+
+  labs(
+      title = "Average data value from 2002 to 2010",
+      x = "Year",
+      y = "Mean data value",
+      color = 'States'
+    ) 
 
-
+plot_average
 
 ```
-Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State
+
+The spagetti plots shows the chage of average data value from 2002 to 2010 for each states. In general, AK,AL have larger mean data_value across the years.For the majority of states, number of locations varied between 1 and 8 and stayed almost stable. For some other states such as FL, NJ and TX, number of locations witnessed rapid change. Most noticeably, the number of locations in FL changed rapidly in 2007, 2008 and 2010. 
+
+
+## 2.5 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State
 ```{r}
 plot_data=
 health_data%>%
-  filter(response %in% c("Poor", "Excellent"), year %in% c("2006","2010"), locationabbr == "NY")%>%
+  filter(response %in% c("Poor","Fair","Good", "Very good","Excellent" ), year %in% c("2006","2010"), locationabbr == "NY")%>%
   select(year, response, locationabbr, data_value)%>%
     ggplot(aes(x=response, y=data_value, Color=response))+
-  geom_point()+
+  geom_boxplot()+
   facet_grid(. ~ year)
     
-  
+  plot_data
 ```
+As is shown in the two-panel boxplot above, in 2006 and 2010, in general, excellent, very good, good level of health have larger data_value. This trend is stable across these two years.This plot also helps us identify the distribution within each level. For example, in excellent level in 2006, more people have lower data_value, the distribution is right skewed.
+
+# Problem 2
+
 
 # Problem 3
+Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 ```{r}                                                                                                                                  
 data_activity= read_csv("./data/accel_data.csv")%>%
   janitor::clean_names()%>%
@@ -180,16 +242,29 @@ data_activity= read_csv("./data/accel_data.csv")%>%
 ```
 there are `r nrow(data_activity)` rows and `r ncol(data_activity)` columns. Key varaibles are the number of week, day and whether it is weekday or weekends, also activity_n is the value of each test.
 
-## 3.2Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+## 3.2 Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 ```{r}
+data_activity_everyday = 
 data_activity%>%
-  group_by(day_id)%>%
+  group_by(week,day)%>%
   mutate(sum_activity = sum(activity_value))%>%
   distinct(sum_activity)%>%
-  select(day_id,sum_activity,everything())%>%
-  knitr::kable()
+pivot_wider(
+  names_from = day,
+  values_from = sum_activity
+  
+) %>%
+  knitr::kable(
+    caption = "overall activity value for each day"
+  )
+  
 
+data_activity_everyday
 ```
+
+
+The overall data_Value for everyday is listed in the table above, with its week number and day_id. There is no specific trend for the change. The value is going up and down.
+
 ## 3.3 make single panle to show 24-hr trend for each day
 ```{r}
 plot_value=
@@ -197,6 +272,8 @@ data_activity%>%
   ggplot(aes(x=activity_number, y=activity_value, color= week))+
            geom_point()+
   facet_grid(.~ day_id)
+
+plot_value
 
 ```
 
