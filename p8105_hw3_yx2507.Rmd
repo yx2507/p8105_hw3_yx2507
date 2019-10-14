@@ -75,6 +75,7 @@ instacart %>%
   mutate(order_rank=min_rank(desc(n)))%>%
   filter(order_rank < 4)%>%
   select(aisle, product_name, n)%>%
+  arrange(desc(n))%>%
    knitr::kable(
     col.names = c("Aisle", "Most popular item","number of orders"), 
     format = 'html', 
@@ -254,6 +255,7 @@ pivot_wider(
   values_from = sum_activity
   
 ) %>%
+  select(week,Monday, Tuesday, Wednesday, Thursday, Friday, Saturday,Sunday)%>%
   knitr::kable(
     caption = "overall activity value for each day"
   )
